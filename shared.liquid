@@ -1,0 +1,70 @@
+<script>
+  const IDX_0 = {{ IDX_0 | json }};
+  data = IDX_0.data
+
+  const exclude_models = "{{ trmnl.plugin_settings.custom_fields_values.exclude_models }}".split(",");
+  console.log(exclude_models)
+
+  const modelTotals = data.reduce((acc, item) => {
+    if (exclude_models.includes(item.model)) {
+      return acc;
+    }
+    if (!acc[item.model]) {
+      acc[item.model] = { completion: 0, prompt: 0, reasoning: 0 };
+      }
+    acc[item.model].completion += item.completion_tokens;
+    acc[item.model].prompt += item.prompt_tokens;
+    acc[item.model].reasoning += item.reasoning_tokens;
+    return acc;
+  }, {});
+
+  const sortedModels = Object.entries(modelTotals)
+    .map(([model, totals]) => ({
+      model,
+      total: totals.completion + totals.prompt + totals.reasoning,
+      completion: totals.completion,
+      prompt: totals.prompt,
+      reasoning: totals.reasoning
+    }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5);
+
+  const totalTokens = {
+    completion: Object.values(modelTotals).reduce((sum, model) => sum + model.completion, 0),
+    prompt: Object.values(modelTotals).reduce((sum, model) => sum + model.prompt, 0),
+    reasoning: Object.values(modelTotals).reduce((sum, model) => sum + model.reasoning, 0)
+  };
+  function formatNumberWithDelimiter(num) {
+    if (num >= 1000000000) {
+      return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
+    }
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    }
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+    }
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+</script>
+
+{%- capture total_completion %}
+  <script>
+    document.write(formatNumberWithDelimiter(totalTokens.completion));
+  </script>
+{%- endcapture %}
+
+{%- capture total_prompt %}
+  <script>
+    document.write(formatNumberWithDelimiter(totalTokens.prompt));
+  </script>
+{%- endcapture %}
+
+{%- capture total_reasoning %}
+  <script>
+    document.write(formatNumberWithDelimiter(totalTokens.reasoning));
+  </script>
+{%- endcapture %}
+
+{% assign total_remaining = IDX_1.data.total_credits | minus: IDX_1.data.total_usage %}
+{% assign percentage =  total_remaining | divided_by: IDX_1.data.total_credits | times: 100 | round %}

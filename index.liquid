@@ -1,105 +1,143 @@
-<!-- import Highcharts library -->
 <script src="https://usetrmnl.com/js/highcharts/12.3.0/highcharts.js"></script>
 <script src="https://usetrmnl.com/js/highcharts/12.3.0/pattern-fill.js"></script>
 
-<!-- Initialize Accumulators -->
-{% assign pt_0 = 0 %}
-{% assign ct_0 = 0 %}
-{% assign rt_0 = 0 %}
-{% assign byok_usage = 0 %}
-{% assign activity_usage = 0 %}
+<div class="progress-bar">
+  <div class="content">
+    <span class="label">Remaining Credits</span>
+    <span class="value value--xxsmall">{{ total_remaining | number_to_currency }} of {{ IDX_1.data.total_credits | number_to_currency }}</span>
+  </div>
+  <div class="track">
+    <div class="fill" style="width: {{ percentage }}%"></div>
+  </div>
+</div>
 
-{% for activity in IDX_0.data %}
-  {% assign pt_1 = activity.prompt_tokens %}
-  {% assign ct_1 = activity.completion_tokens %}
-  {% assign rt_1 = activity.reasoning_tokens %}
 
-  {% assign pt_0 = pt_0 | plus: pt_1 %}
-  {% assign ct_0 = ct_0 | plus: ct_1 %}
-  {% assign rt_0 = rt_0 | plus: rt_1 %}
-  {% assign model_tokens_total = pt_1 | plus: ct_1 %}
-  
-  {% assign byok_usage = byok_usage | plus: activity.byok_usage_inference %} 
-  {% assign activity_usage = activity_usage | plus: activity.usage %}
-  {% assign total_tokens = pt_0 | plus: ct_0 | plus: rt_0 %}
-  {% assign total_usage = activity_usage | plus: byok_usage %}
-{% endfor %}
 
-<div class="grid grid--cols-1">
-  <div class="col--center">
-    <div class="row--center">
-      <b>Total OpenRouter Spend (All time):</b>
-      {{ IDX_1.data.total_usage | number_to_currency }} of {{ IDX_1.data.total_credits | number_to_currency }}<br />
+<div id="token-bar-chart" class="w--full">
+
+  <script type="text/javascript">
+
+  const formattedBarData = [
+  {
+    name: "Completion Tokens",
+    data: sortedModels.map(model => [model.model, model.completion])
+  },
+  {
+    name: "Prompt Tokens",
+    data: sortedModels.map(model => [model.model, model.prompt])
+  },
+  {
+    name: "Reasoning Tokens",
+    data: sortedModels.map(model => [model.model, model.reasoning])
+  }];
+
+  Highcharts.chart("token-bar-chart", {
+    chart: {
+      type: "column",
+      height: 252,
+      width: null,
+      animation: false,
+      spacing: [10, 10, 5, 10]
+    },
+    title: {
+      text: null
+    },
+    plotOptions: {
+      series: {
+        animation: false,
+        enableMouseTracking: false,
+        states: {
+          hover: { enabled: false }
+        },
+        pointPadding: 0.05,
+        groupPadding: 0.1,
+        borderWidth: 0
+      }
+    },
+    series: formattedBarData.map((series, index) => ({
+      data: series.data,
+      name: series.name,
+      zIndex: 4 - index,
+      color: index === 0 ? "#000000" : {
+        pattern: {
+          image: `https://usetrmnl.com/images/grayscale/gray-${index + 2}.png`,
+          width: 12,
+          height: 12
+        }
+      }
+    })),
+    tooltip: { enabled: false },
+    legend: { enabled: false },
+    yAxis: {
+      labels: {
+        style: { fontSize: "16px", color: "#000000" }
+      },
+      gridLineDashStyle: "shortdot",
+      gridLineWidth: 1,
+      gridLineColor: "#000000",
+      tickAmount: 5,
+      title: {
+        text: null
+      }
+    },
+    xAxis: {
+      type: "category",
+      labels: {
+        style: { fontSize: "16px", color: "#000000" },
+        padding: 5,
+        y: 25
+      },
+      lineWidth: 0,
+      gridLineDashStyle: "dot",
+      tickWidth: 0,
+      tickLength: 0,
+      gridLineWidth: 1,
+      gridLineColor: "#000000",
+      title: {
+        text: null
+      }
+    },
+    credits: {
+      enabled: false
+    }
+  });
+
+  </script>
+</div>
+
+
+<div class="grid grid--cols-3">
+  <div class="item">
+    <div class="meta"></div>
+    <div class="content">
+      <div class="w--14 h--1.5 mb--2 bg--black" style="border-radius: 20px;"></div>
+      <span class="value value--large" data-value-fit="true">{{ total_completion }}</span>
+      <span class="label">Total Completion Tokens</span>
+    </div>
+  </div>
+  <div class="item">
+    <div class="meta"></div>
+    <div class="content">
+      <div class="w--14 h--1.5 mb--2 bg--gray-2"></div>
+      <span class="value value--large" data-value-fit="true">{{ total_prompt }}</span>
+      <span class="label">Total Prompt Tokens</span>
+    </div>
+  </div>
+  <div class="item">
+    <div class="meta"></div>
+    <div class="content">
+      <div class="w--14 h--1.5 mb--2 bg--gray-4"></div>
+      <span class="value value--large" data-value-fit="true">{{ total_reasoning }}</span>
+      <span class="label">Total Reasoning Tokens</span>
     </div>
   </div>
 </div>
 
-<br /><br />
 
-<div class="grid grid--cols-4">
-  <div class="col">
-    <div class="row row--center">
-      <b>Total Tokens</b>
-    </div>
-    <div class="row row--center">
-      {{ total_tokens }}
-    </div>
-  </div>
+<div class="pt--4"></div>
 
-  <div class="col">
-    <div class="row row--center">
-      <b>OpenRouter Total</b>
-    </div>
-    <div class="row row--center">
-      {{ activity_usage | number_to_currency }}
-    </div>
-  </div>
-  
-  <div class="col">
-    <div class="row row--center">
-      <b>BYOK Total</b>
-    </div>
-    <div class="row row--center">
-    {{ byok_usage| number_to_currency }}
-    </div>
-  </div>
-  
-  <div class="col">
-    <div class="row row--center">
-      <b>Total</b>
-    </div>
-    <div class="row row--center">
-    {{ total_usage | number_to_currency }}
-    </div>
-  </div>
-
+<div class="title_bar">
+  <img class="image" src="https://usetrmnl.com/images/plugins/trmnl--render.svg">
+  <span class="title">{{ trmnl.plugin_settings.instance_name }}</span>
+  <span class="instance">Usage for {{ 30 | days_ago | date: "%B %d, %Y" }} to {{ "now" | date: "%s" | plus: trmnl.user.utc_offset | date: "%B %d, %Y"}}</span>
 </div>
-
-<!-- Display Table Header -->
-<table class="table table--large" data-table-limit="true">
-    <thead>
-          <tr>
-            <th><span class="title">Model</span></th>
-            <th><span class="title">Prompt Tokens</span></th>
-            <th><span class="title">Completion Tokens</span></th>
-            <th><span class="title">Reasoning Tokens</span></th>
-            <th><span class="title">Total Model Tokens</span></th>
-          </tr>
-    </thead>
-    <tbody>
-      
-      {% assign byok_usage = 0 %}
-      {% assign activity_usage = 0 %}
-      
-      {% for activity in IDX_0.data %}
-          {% assign total_usage = prompt_tokens | plus: activity.completion_tokens | plus: activity.reasoning_tokens %}
-          <tr>
-            <td><span class="label">{{ activity.model }}</span></td>
-            <td><span class="label label--small">{{ activity.prompt_tokens }}</span></td>
-            <td><span class="label label--small">{{ activity.completion_tokens }} </span></td>
-            <td><span class="label label--small">{{ activity.reasoning_tokens }}</span></td>
-            <td><span class="label label--small">{{ total_usage }}</span></td>
-          </tr>
-      {% endfor %}
-    </tbody>
-</table>
