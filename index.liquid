@@ -1,0 +1,105 @@
+<!-- import Highcharts library -->
+<script src="https://usetrmnl.com/js/highcharts/12.3.0/highcharts.js"></script>
+<script src="https://usetrmnl.com/js/highcharts/12.3.0/pattern-fill.js"></script>
+
+<!-- Initialize Accumulators -->
+{% assign pt_0 = 0 %}
+{% assign ct_0 = 0 %}
+{% assign rt_0 = 0 %}
+{% assign byok_usage = 0 %}
+{% assign activity_usage = 0 %}
+
+{% for activity in IDX_0.data %}
+  {% assign pt_1 = activity.prompt_tokens %}
+  {% assign ct_1 = activity.completion_tokens %}
+  {% assign rt_1 = activity.reasoning_tokens %}
+
+  {% assign pt_0 = pt_0 | plus: pt_1 %}
+  {% assign ct_0 = ct_0 | plus: ct_1 %}
+  {% assign rt_0 = rt_0 | plus: rt_1 %}
+  {% assign model_tokens_total = pt_1 | plus: ct_1 %}
+  
+  {% assign byok_usage = byok_usage | plus: activity.byok_usage_inference %} 
+  {% assign activity_usage = activity_usage | plus: activity.usage %}
+  {% assign total_tokens = pt_0 | plus: ct_0 | plus: rt_0 %}
+  {% assign total_usage = activity_usage | plus: byok_usage %}
+{% endfor %}
+
+<div class="grid grid--cols-1">
+  <div class="col--center">
+    <div class="row--center">
+      <b>Total OpenRouter Spend (All time):</b>
+      {{ IDX_1.data.total_usage | number_to_currency }} of {{ IDX_1.data.total_credits | number_to_currency }}<br />
+    </div>
+  </div>
+</div>
+
+<br /><br />
+
+<div class="grid grid--cols-4">
+  <div class="col">
+    <div class="row row--center">
+      <b>Total Tokens</b>
+    </div>
+    <div class="row row--center">
+      {{ total_tokens }}
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="row row--center">
+      <b>OpenRouter Total</b>
+    </div>
+    <div class="row row--center">
+      {{ activity_usage | number_to_currency }}
+    </div>
+  </div>
+  
+  <div class="col">
+    <div class="row row--center">
+      <b>BYOK Total</b>
+    </div>
+    <div class="row row--center">
+    {{ byok_usage| number_to_currency }}
+    </div>
+  </div>
+  
+  <div class="col">
+    <div class="row row--center">
+      <b>Total</b>
+    </div>
+    <div class="row row--center">
+    {{ total_usage | number_to_currency }}
+    </div>
+  </div>
+
+</div>
+
+<!-- Display Table Header -->
+<table class="table table--large" data-table-limit="true">
+    <thead>
+          <tr>
+            <th><span class="title">Model</span></th>
+            <th><span class="title">Prompt Tokens</span></th>
+            <th><span class="title">Completion Tokens</span></th>
+            <th><span class="title">Reasoning Tokens</span></th>
+            <th><span class="title">Total Model Tokens</span></th>
+          </tr>
+    </thead>
+    <tbody>
+      
+      {% assign byok_usage = 0 %}
+      {% assign activity_usage = 0 %}
+      
+      {% for activity in IDX_0.data %}
+          {% assign total_usage = prompt_tokens | plus: activity.completion_tokens | plus: activity.reasoning_tokens %}
+          <tr>
+            <td><span class="label">{{ activity.model }}</span></td>
+            <td><span class="label label--small">{{ activity.prompt_tokens }}</span></td>
+            <td><span class="label label--small">{{ activity.completion_tokens }} </span></td>
+            <td><span class="label label--small">{{ activity.reasoning_tokens }}</span></td>
+            <td><span class="label label--small">{{ total_usage }}</span></td>
+          </tr>
+      {% endfor %}
+    </tbody>
+</table>
