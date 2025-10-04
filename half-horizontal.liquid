@@ -1,0 +1,47 @@
+<div class="pt--2"></div>
+<div class="progress-bar">
+  <div class="content">
+    <span class="label">Remaining Credits</span>
+    <span class="value value--xxsmall">{{ total_remaining | number_to_currency }} of {{ IDX_1.data.total_credits | number_to_currency }}</span>
+  </div>
+  <div class="track">
+    <div class="fill" style="width: {{ percentage }}%"></div>
+  </div>
+</div>
+
+<div class="pt--4"></div>
+
+<div class="grid grid--cols-3">
+  <div class="item">
+    <div class="meta"></div>
+    <div class="content">
+      <div class="w--14 h--1.5 mb--2 bg--black" style="border-radius: 20px;"></div>
+      <span class="value value--large" data-value-fit="true">{{ total_completion }}</span>
+      <span class="label">Total Completion Tokens</span>
+    </div>
+  </div>
+  <div class="item">
+    <div class="meta"></div>
+    <div class="content">
+      <div class="w--14 h--1.5 mb--2 bg--black"></div>
+      <span class="value value--large" data-value-fit="true">{{ total_prompt }}</span>
+      <span class="label">Total Prompt Tokens</span>
+    </div>
+  </div>
+  <div class="item">
+    <div class="meta"></div>
+    <div class="content">
+      <div class="w--14 h--1.5 mb--2 bg--black"></div>
+      <span class="value value--large" data-value-fit="true">{{ total_reasoning }}</span>
+      <span class="label">Total Reasoning Tokens</span>
+    </div>
+  </div>
+</div>
+
+<div class="pt--4"></div>
+
+<div class="title_bar">
+  <img class="image" src="https://usetrmnl.com/images/plugins/trmnl--render.svg">
+  <span class="title">{{ trmnl.plugin_settings.instance_name }}</span>
+  <span class="instance">Usage for {{ 30 | days_ago | date: "%B %d, %Y" }} to {{ "now" | date: "%s" | plus: trmnl.user.utc_offset | date: "%B %d, %Y"}}</span>
+</div>
