@@ -1,5 +1,6 @@
 <script src="https://usetrmnl.com/js/highcharts/12.3.0/highcharts.js"></script>
 <script src="https://usetrmnl.com/js/highcharts/12.3.0/pattern-fill.js"></script>
+{% assign chart_id = "chart-" | append_random %} 
 
 <div class="progress-bar">
   <div class="content">
@@ -11,9 +12,7 @@
   </div>
 </div>
 
-
-
-<div id="token-bar-chart" class="w--full">
+<div id="{{ chart_id }}" class="w--full">
 
   <script type="text/javascript">
 
@@ -31,7 +30,7 @@
     data: sortedModels.map(model => [model.model, model.reasoning])
   }];
 
-  Highcharts.chart("token-bar-chart", {
+  Highcharts.chart("{{ chart_id }}", {
     chart: {
       type: "column",
       height: 252,
